@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: node
+  namespace: tezos
+  labels:
+    app: node
+spec:
+  serviceName: node
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: node
+        image: registry.local/tezos-node:v8.0
+        command: [ "tezos-node", "run", "--rpc-addr", "0.0.0.0:8732", "--data-dir=/var/lib/tezos/node" ]
+        ports:
+        - containerPort: 9732
+          name: p2p
+        - containerPort: 8732
+          name: rpc
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/tezos/node
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 6Gi
+          limits:
+            cpu: 1000m
+            memory: 6Gi
+        readinessProbe:
+          httpGet:
+            path: /chains/main/blocks/head
+            port: 8732
+        livenessProbe:
+          initialDelaySeconds: 180
+          periodSeconds: 10
+          failureThreshold: 3
+          httpGet:
+            path: /network/connections
+            port: 8732
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local
+      resources:
+        requests:
+          storage: 100Gi
