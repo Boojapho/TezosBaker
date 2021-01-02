@@ -36,17 +36,26 @@ spec:
           limits:
             cpu: 1000m
             memory: 6Gi
+        startupProbe:
+          httpGet:
+            path: /chains/main/blocks/head/header
+            port: 8732
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          failureThreshold: 20
+          timeoutSeconds: 10
         readinessProbe:
           httpGet:
-            path: /chains/main/blocks/head
+            path: /chains/main/blocks/head/header
             port: 8732
+          periodSeconds: 15
+          timeoutSeconds: 10
         livenessProbe:
-          initialDelaySeconds: 180
-          periodSeconds: 10
-          failureThreshold: 3
-          httpGet:
-            path: /network/connections
-            port: 8732
+          exec:
+            command:
+            - /usr/local/bin/peercheck
+          periodSeconds: 15
+          timeoutSeconds: 10
   volumeClaimTemplates:
   - metadata:
       name: data
