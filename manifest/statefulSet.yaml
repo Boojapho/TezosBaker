@@ -17,10 +17,17 @@ spec:
         app: node
     spec:
       terminationGracePeriodSeconds: 10
+      initContainers:
+      - name: init-node
+        image: registry.local/tezos-node-init:dev
+        volumeMounts:
+        - name: data
+          mountPath: /home/tezos/.tezos-node
+        - name: snapshot
+          mountPath: /home/tezos/.tezos-snapshots
       containers:
       - name: node
         image: registry.local/tezos-node:v8.0
-        command: [ "tezos-node", "run", "--rpc-addr", "0.0.0.0:8732", "--data-dir=/var/lib/tezos/node" ]
         ports:
         - containerPort: 9732
           name: p2p
@@ -28,7 +35,7 @@ spec:
           name: rpc
         volumeMounts:
         - name: data
-          mountPath: /var/lib/tezos/node
+          mountPath: /home/tezos/.tezos-node
         resources:
           requests:
             cpu: 1000m
@@ -53,8 +60,8 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /usr/local/bin/peercheck
-          periodSeconds: 15
+            - /usr/local/bin/nodecheck
+          periodSeconds: 65
           timeoutSeconds: 10
   volumeClaimTemplates:
   - metadata:
@@ -65,3 +72,11 @@ spec:
       resources:
         requests:
           storage: 100Gi
+  - metadata:
+      name: snapshot
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local
+      resources:
+        requests:
+          storage: 10Gi

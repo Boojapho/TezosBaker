@@ -6,6 +6,9 @@ metadata:
     type: local
 spec:
   storageClassName: local
+  claimRef:
+    name: data-node-0
+    namespace: tezos
   capacity:
     storage: 100Gi
   accessModes:
@@ -16,14 +19,17 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: tezos-client
+  name: tezos-snapshots
   labels:
     type: local
 spec:
   storageClassName: local
+  claimRef:
+    name: snapshot-node-0
+    namespace: tezos
   capacity:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/var/lib/tezos/client"
+    path: "/var/lib/tezos/snapshots"

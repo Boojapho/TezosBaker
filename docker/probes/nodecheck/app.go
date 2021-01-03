@@ -19,9 +19,9 @@ type Header struct {
  * It will connect to the RPC at localhost:8732
  * The node is considered healthy if the number of peers > 1 and
  * the block level has progressed since the last check
- * The last block level is stored in /var/lib/tezos/node/last_block
+ * The last block level is stored in $data_dir/last_block
  * If the peer check passes, but the block hasn't progressed, a "resync" file
- * is created in /var/lib/tezos/node.  This can be used by an init container to
+ * is created in the $data_dir.  This can be used by an init container to
  * re-create the node from a snapshot or other means of fixing the node problem.
  */
 
@@ -65,7 +65,7 @@ func getBody(url string) []byte {
 // Make sure block level has progressed
 func check_header() {
 	url := "http://localhost:8732/chains/main/blocks/head/header"
-	data_dir := "/var/lib/tezos/node"
+	data_dir := "/home/tezos/.tezos-node"
 	last_block := data_dir + "/last_block"
 	resync := data_dir + "/resync"
 	body := getBody(url)
