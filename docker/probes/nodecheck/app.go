@@ -79,8 +79,12 @@ func check_header() {
 	data, err := ioutil.ReadFile(last_block)
 	if err == nil {
 		if string(data) == strconv.Itoa(header.Level) {
-			err = ioutil.WriteFile(resync, []byte(""), 0644)
-			checkError(err)
+			// Don't overwrite file in case it has been acknowledged
+			_, err := os.Stat(resync)
+			if os.IsNotExist(err) {
+				err = ioutil.WriteFile(resync, []byte(""), 0644)
+				checkError(err)
+			}
 			log.Fatal("Block level has not changed!")
 		} else {
 			os.Remove(resync)
